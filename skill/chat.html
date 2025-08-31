@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat - SkillShareboard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-content">
+      <h1>Chat</h1>
+      <p class="subtitle">Connect instantly with other SkillShareboard users!</p>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="profile.html">Profile</a>
+        <a href="requests.html">Requests</a>
+        <a href="post-service.html">Post Service</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <div class="container" style="max-width:500px;">
+      <h2 style="text-align:center;">Chat with Users</h2>
+      <div id="chat-box" style="height:300px; overflow-y:auto; border-radius:10px; border:1px solid #ccc; padding:16px; margin-bottom:16px; background:#f9f9f9; box-shadow:0 2px 8px rgba(0,0,0,0.07);"></div>
+     <!-- Replace your chat input section with this for testing -->
+<div style="display:flex; gap:10px;">
+  <input type="text" id="chat-message" placeholder="Type a message..." style="flex:1;">
+  <button>Send</button>
+</div>
+      </div>
+    </div>
+  </main>
+  <script src="js/script.js"></script>
+</body>
