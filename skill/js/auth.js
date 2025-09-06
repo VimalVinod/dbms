@@ -66,21 +66,18 @@ export async function logoutUser() {
 }
 
 // 🔹 Example: Fetch Services
+// 🔹 Fetch services (no profiles join)
 export async function getAllServices() {
   const { data, error } = await supabase
     .from('services')
-    .select(`
-      id,
-      title,
-      description,
-      price,
-      user_id,
-      profiles (
-        id,
-        name,
-        email
-      )
-    `);
+    .select('id, title, description, price, user_id'); // only real columns
+
+  if (error) {
+    console.error("Error fetching services:", error.message);
+    return [];
+  }
+  return data;
+}
 
   if (error) {
     console.error(error);
@@ -128,6 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 })
+
 
 
 
