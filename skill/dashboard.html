@@ -94,11 +94,8 @@
           <h3>${svc.title}</h3>
           <p>${svc.description}</p>
           <strong>Price: ₹${svc.price}</strong>
-          <p style="font-size:0.95em;color:#2575fc;">
-            By: ${svc.profiles?.name || 'Unknown'}
-            ${svc.profiles?.email ? `<br><span style="color:#1f2937;font-size:0.95em;">Email: ${svc.profiles.email}</span>` : ''}
-          </p>
-          <a href="chat.html?user_id=${svc.profiles?.id || svc.user_id}" 
+          <br>
+          <a href="chat.html?user_id=${svc.user_id}" 
              class="button-link" 
              style="margin-top:8px;display:inline-block;">Contact</a>
         `;
