@@ -62,7 +62,7 @@ export async function getCurrentUser() {
 // 🔹 Logout User
 export async function logoutUser() {
   await supabase.auth.signOut()
-  window.location.href = "login.html"
+  window.location.href = "index.html"
 }
 
 // 🔹 Example: Fetch Services
@@ -121,9 +121,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const user = await signUpUser(name, email, password, null, null)
       if (user) {
         alert("Signup successful! Please check your email for confirmation.")
-        window.location.href = "login.html"
+        window.location.href = "index.html"
       }
     })
   }
 })
+
 
