@@ -5,107 +5,33 @@
   <title>Chat - SkillShareboard</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    body, html {
-      height: 100%;
-      margin:0;
-      padding:0;
+    body, html { height: 100%; margin:0; padding:0;
       background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
-      font-family: Arial, sans-serif;
-    }
-    .chat-container {
-      display: flex;
-      height: 100%;
-    }
-    .chat-sidebar {
-      width: 25%;
-      background: rgba(255, 255, 255, 0.9);
-      overflow-y: auto;
-      border-right: 1px solid #ddd;
-      padding: 10px;
-    }
-    .chat-main {
-      width: 75%;
-      display: flex;
-      flex-direction: column;
-      background: rgba(255, 255, 255, 0.9);
-    }
-    .chat-header {
-      padding: 15px;
-      border-bottom: 1px solid #ddd;
-      background: #f7f7f7;
-      font-weight: bold;
-    }
-    .chat-messages {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-    }
-    .chat-input {
-      display: flex;
-      padding: 10px;
-      border-top: 1px solid #ddd;
-    }
-    .chat-input input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-    }
-    .chat-input button {
-      margin-left: 10px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 20px;
-      background: #4CAF50;
-      color: white;
-      cursor: pointer;
-    }
-    .chat-input button:hover {
-      background: #45a049;
-    }
-    .user-row {
-      padding: 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      border-bottom: 1px solid #eee;
-    }
-    .user-row img {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      margin-right: 8px;
-    }
-    .user-row:hover {
-      background: #f0f0f0;
-    }
-    .toast {
-      visibility: hidden;
-      min-width: 200px;
-      background-color: #333;
-      color: #fff;
-      text-align: center;
-      border-radius: 8px;
-      padding: 10px;
-      position: fixed;
-      z-index: 1;
-      left: 50%;
-      bottom: 30px;
-      transform: translateX(-50%);
-      font-size: 14px;
-    }
-    .toast.show {
-      visibility: visible;
-      animation: fadein 0.5s, fadeout 0.5s 2.5s;
-    }
-    @keyframes fadein {
-      from { bottom: 0; opacity: 0; }
-      to { bottom: 30px; opacity: 1; }
-    }
-    @keyframes fadeout {
-      from { bottom: 30px; opacity: 1; }
-      to { bottom: 0; opacity: 0; }
-    }
+      font-family: Arial, sans-serif; }
+    .chat-container { display: flex; height: 100%; }
+    .chat-sidebar { width: 25%; background: rgba(255,255,255,0.9);
+      overflow-y: auto; border-right: 1px solid #ddd; padding: 10px; }
+    .chat-main { width: 75%; display: flex; flex-direction: column;
+      background: rgba(255,255,255,0.9); }
+    .chat-header { padding: 15px; border-bottom: 1px solid #ddd;
+      background: #f7f7f7; font-weight: bold; }
+    .chat-messages { flex: 1; padding: 10px; overflow-y: auto; }
+    .chat-input { display: flex; padding: 10px; border-top: 1px solid #ddd; }
+    .chat-input input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 20px; }
+    .chat-input button { margin-left: 10px; padding: 10px 20px; border: none;
+      border-radius: 20px; background: #4CAF50; color: white; cursor: pointer; }
+    .chat-input button:hover { background: #45a049; }
+    .user-row { padding: 8px; cursor: pointer; display: flex; align-items: center;
+      border-bottom: 1px solid #eee; }
+    .user-row img { width: 32px; height: 32px; border-radius: 50%; margin-right: 8px; }
+    .user-row:hover { background: #f0f0f0; }
+    .toast { visibility: hidden; min-width: 200px; background: #333; color: #fff;
+      text-align: center; border-radius: 8px; padding: 10px;
+      position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%);
+      font-size: 14px; }
+    .toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+    @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+    @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
   </style>
 </head>
 <body>
@@ -124,10 +50,7 @@
 
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js';
-
-    const supabaseUrl = "https://ojswlfhapamjklsgdpxu.supabase.co";
-    const supabaseKey = "YOUR_SUPABASE_KEY"; // 🔑 replace with your actual key
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient("https://ojswlfhapamjklsgdpxu.supabase.co","YOUR_SUPABASE_KEY");
 
     const chatListEl = document.getElementById("chatList");
     const chatHeaderEl = document.getElementById("chatHeader");
@@ -136,257 +59,91 @@
     const sendBtn = document.getElementById("sendBtn");
     const toastEl = document.getElementById("toast");
 
-    let currentUser = null;
-    let selectedUser = null;
-
-    // 👉 Get user_id from query string if redirected from services
-    const urlParams = new URLSearchParams(window.location.search);
-    const preselectedUserId = urlParams.get("user_id");
+    let currentUser = null, activeChat = null, recipientInfo = null;
 
     function showToast(msg) {
       toastEl.textContent = msg;
       toastEl.className = "toast show";
-      setTimeout(() => { toastEl.className = toastEl.className.replace("show", ""); }, 3000);
+      setTimeout(() => toastEl.className = toastEl.className.replace("show",""), 3000);
     }
 
     async function loadCurrentUser() {
       const { data } = await supabase.auth.getUser();
       currentUser = data?.user;
-      if (!currentUser) {
-        showToast("Not logged in!");
-        window.location.href = "login.html";
-      }
+      if (!currentUser) { showToast("Login required."); window.location.href="login.html"; }
     }
 
     async function getChatUsers() {
-      const { data, error } = await supabase.rpc("get_chat_users", { current_user_id: currentUser.id });
-      if (error) {
-        console.error(error);
-        showToast("Failed to load chats");
-        return [];
-      }
-      return data;
+      const { data, error } = await supabase
+        .from('messages')
+        .select('sender_id, receiver_id, content, created_at')
+        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+        .order('created_at',{ascending:false});
+      if (error) return [];
+
+      const userMap = {};
+      data.forEach(m => {
+        const other = m.sender_id === currentUser.id ? m.receiver_id : m.sender_id;
+        if (!userMap[other]) userMap[other] = m;
+      });
+      const ids = Object.keys(userMap);
+      if (!ids.length) return [];
+
+      const { data: users } = await supabase.from('users').select('id,name,profile_pic').in('id', ids);
+      return users.map(u=>({...u,lastMessage:userMap[u.id].content,lastTime:userMap[u.id].created_at}));
     }
 
     function renderUserRow(user) {
-      const div = document.createElement("div");
-      div.className = "user-row";
-      div.innerHTML = `<img src="${user.profile_pic || 'default.png'}"><span>${user.name}</span>`;
-      div.addEventListener("click", () => selectChat(user));
-      chatListEl.appendChild(div);
+      const row=document.createElement("div");
+      row.className="user-row";
+      row.innerHTML=`<img src="${user.profile_pic||`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}`}" />
+                     <div><strong>${user.name}</strong><br><small>${user.lastMessage||""}</small></div>`;
+      row.addEventListener("click",()=>selectChat(user));
+      chatListEl.appendChild(row);
     }
 
-    function selectChat(user) {
-      selectedUser = user;
-      chatHeaderEl.textContent = user.name;
+    async function selectChat(user){
+      activeChat=user.id; recipientInfo=user;
+      chatHeaderEl.textContent="Chat with "+user.name;
       loadMessages();
     }
 
-    async function loadMessages() {
-      if (!selectedUser) return;
-      chatMessagesEl.innerHTML = "Loading...";
+    async function loadMessages(){
+      if(!activeChat) return;
       const { data, error } = await supabase
         .from("messages")
         .select("*")
-        .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedUser.id}),and(sender_id.eq.${selectedUser.id},receiver_id.eq.${currentUser.id})`)
-        .order("created_at", { ascending: true });
-      if (error) {
-        console.error(error);
-        chatMessagesEl.innerHTML = "Error loading messages.";
-        return;
-      }
-      chatMessagesEl.innerHTML = "";
-      data.forEach(msg => {
-        const div = document.createElement("div");
-        div.textContent = (msg.sender_id === currentUser.id ? "Me: " : `${selectedUser.name}: `) + msg.content;
+        .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeChat}),and(sender_id.eq.${activeChat},receiver_id.eq.${currentUser.id})`)
+        .order("created_at",{ascending:true});
+      if(error){ showToast("Error loading messages"); return; }
+
+      chatMessagesEl.innerHTML="";
+      data.forEach(msg=>{
+        const div=document.createElement("div");
+        div.textContent=(msg.sender_id===currentUser.id?"Me: ":""+recipientInfo.name+": ")+msg.content;
         chatMessagesEl.appendChild(div);
       });
+      chatMessagesEl.scrollTop=chatMessagesEl.scrollHeight;
     }
 
-    async function sendMessage() {
-      const content = messageInput.value.trim();
-      if (!content || !selectedUser) return;
-      const { error } = await supabase.from("messages").insert([
-        { sender_id: currentUser.id, receiver_id: selectedUser.id, content }
-      ]);
-      if (error) {
-        console.error(error);
-        showToast("Failed to send message");
-        return;
-      }
-      messageInput.value = "";
+    async function sendMessage(){
+      const content=messageInput.value.trim();
+      if(!content||!activeChat) return;
+      await supabase.from("messages").insert([{sender_id:currentUser.id,receiver_id:activeChat,content}]);
+      messageInput.value="";
       loadMessages();
     }
 
-    sendBtn.addEventListener("click", sendMessage);
-    messageInput.addEventListener("keydown", e => { if (e.key === "Enter") sendMessage(); });
+    sendBtn.addEventListener("click",sendMessage);
+    messageInput.addEventListener("keydown",e=>{if(e.key==="Enter")sendMessage();});
 
-    window.addEventListener("DOMContentLoaded", async () => {
+    window.addEventListener("DOMContentLoaded", async ()=>{
       await loadCurrentUser();
-      const users = await getChatUsers();
-
-      chatListEl.innerHTML = "";
-      if (!users.length) {
-        chatListEl.textContent = "No chats yet.";
-      } else {
-        users.forEach(u => renderUserRow(u));
-      }
-
-      // 👉 Auto-select user if redirected from services
-      if (preselectedUserId) {
-        let targetUser = users.find(u => u.id === preselectedUserId);
-
-        // if not already in chats, fetch directly from users table
-        if (!targetUser) {
-          const { data: extraUser } = await supabase
-            .from("users")
-            .select("id,name,profile_pic")
-            .eq("id", preselectedUserId)
-            .single();
-          if (extraUser) {
-            renderUserRow(extraUser);
-            targetUser = extraUser;
-          }
-        }
-
-        if (targetUser) {
-          selectChat(targetUser);
-        } else {
-          showToast("User not found.");
-        }
-      }
+      const users=await getChatUsers();
+      chatListEl.innerHTML=users.length?"":"No chats yet.";
+      users.forEach(renderUserRow);
+      setInterval(()=>{ if(activeChat) loadMessages(); },3000);
     });
   </script>
 </body>
 </html>
-async function loadCurrentUser() {
-  currentUser = await getCurrentUser();
-  if (!currentUser) {
-    showToast("Login required.");
-    setTimeout(()=>window.location.href="login.html", 1500);
-  }
-}
-
-async function getChatUsers() {
-  const { data, error } = await supabase
-    .from('messages')
-    .select('sender_id, recipient_id, content, created_at')
-    .or(`sender_id.eq.${currentUser.id},recipient_id.eq.${currentUser.id}`)
-    .order('created_at', { ascending: false });
-  if (error) { showToast(error.message); return []; }
-
-  const userMap = {};
-  data.forEach(msg => {
-    const otherId = msg.sender_id === currentUser.id ? msg.recipient_id : msg.sender_id;
-    if (!userMap[otherId]) userMap[otherId] = msg;
-  });
-
-  const userIds = Object.keys(userMap);
-  if (!userIds.length) return [];
-
-  const { data: users, error: userError } = await supabase
-    .from('users')
-    .select('id,name,profile_pic')
-    .in('id', userIds);
-  if (userError) { showToast(userError.message); return []; }
-
-  return users.map(u => ({ ...u, lastMessage:userMap[u.id].content, lastTime:userMap[u.id].created_at }));
-}
-
-function renderUserRow(user) {
-  const row = document.createElement('div');
-  row.className = 'user-row';
-  row.innerHTML = `
-    <img class="user-avatar" src="${user.profile_pic || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=2575fc&color=fff&size=64`}" alt="${user.name}">
-    <div class="user-info">
-      <div class="user-name">${user.name}</div>
-      <div class="last-message">${user.lastMessage}</div>
-    </div>
-    <div class="timestamp">${new Date(user.lastTime).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
-  `;
-  row.addEventListener('click', () => selectChat(user));
-  chatListEl.appendChild(row);
-}
-
-async function selectChat(user) {
-  activeChat = user.id;
-  recipientInfo = user;
-  document.getElementById('chat-header').textContent = `Chat with ${user.name}`;
-  messageInput.disabled = false;
-  sendBtn.disabled = false;
-  chatBox.innerHTML = '';
-  loadMessages();
-}
-
-async function loadMessages() {
-  if (!activeChat) return;
-  const { data, error } = await supabase
-    .from('messages')
-    .select('id, sender_id, recipient_id, content, created_at')
-    .or(`and(sender_id.eq.${currentUser.id},recipient_id.eq.${activeChat}),and(sender_id.eq.${activeChat},recipient_id.eq.${currentUser.id})`)
-    .order('created_at', { ascending: true });
-  if (error) { showToast(error.message); return; }
-
-  chatBox.innerHTML = '';
-  data.forEach(msg => renderMessage(msg));
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-function renderMessage(msg) {
-  const isMe = msg.sender_id === currentUser.id;
-  const row = document.createElement('div');
-  row.className = 'bubble-row ' + (isMe ? 'me' : 'them');
-
-  const avatarUrl = isMe
-    ? currentUser.profile_pic || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=2575fc&color=fff&size=64`
-    : recipientInfo.profile_pic || `https://ui-avatars.com/api/?name=${encodeURIComponent(recipientInfo.name)}&background=81d421&color=fff&size=64`;
-
-  const unsendBtn = isMe ? `<button class="unsend-btn">⋮</button>` : '';
-  row.innerHTML = `
-    ${!isMe ? `<img class="chat-avatar" src="${avatarUrl}" alt="User">` : ""}
-    <div class="chat-bubble">
-      ${!isMe ? `<div class="bubble-name">${recipientInfo.name}</div>` : ""}
-      ${msg.content}
-      ${unsendBtn}
-      <div class="bubble-time">${new Date(msg.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-    </div>
-    ${isMe ? `<img class="chat-avatar" src="${avatarUrl}" alt="Me">` : ""}
-  `;
-  chatBox.appendChild(row);
-
-  if (isMe) {
-    const btn = row.querySelector('.unsend-btn');
-    btn.addEventListener('click', () => {
-      showToast("Deleting...");
-      supabase.from('messages').delete().eq('id', msg.id).then(({ error }) => {
-        if (error) showToast(error.message);
-        else { row.remove(); showToast("Message deleted."); }
-      });
-    });
-  }
-}
-
-sendBtn.addEventListener('click', async () => {
-  const content = messageInput.value.trim();
-  if (!content || !activeChat) return;
-  const newMessage = { sender_id: currentUser.id, recipient_id:activeChat, content, created_at:new Date().toISOString() };
-  renderMessage(newMessage);
-  messageInput.value = '';
-  const { error } = await supabase.from('messages').insert([newMessage]);
-  if (error) showToast(error.message);
-  chatBox.scrollTop = chatBox.scrollHeight;
-});
-
-window.addEventListener('DOMContentLoaded', async () => {
-  await loadCurrentUser();
-  const users = await getChatUsers();
-  if (!users.length) chatListEl.textContent = "No chats yet.";
-  users.forEach(u => renderUserRow(u));
-  setInterval(() => { if(activeChat) loadMessages(); }, 3000);
-});
-</script>
-
-</body>
-</html>
-
-
