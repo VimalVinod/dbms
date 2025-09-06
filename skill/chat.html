@@ -5,31 +5,71 @@
   <title>Chat - SkillShareboard</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    body, html { height: 100%; margin:0; padding:0;
+    body, html {
+      height: 100%;
+      margin:0; padding:0;
       background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
-      font-family: Arial, sans-serif; }
+      font-family: Arial, sans-serif;
+    }
     .chat-container { display: flex; height: 100%; }
-    .chat-sidebar { width: 25%; background: rgba(255,255,255,0.9);
-      overflow-y: auto; border-right: 1px solid #ddd; padding: 10px; }
-    .chat-main { width: 75%; display: flex; flex-direction: column;
-      background: rgba(255,255,255,0.9); }
-    .chat-header { padding: 15px; border-bottom: 1px solid #ddd;
-      background: #f7f7f7; font-weight: bold; }
-    .chat-messages { flex: 1; padding: 10px; overflow-y: auto; }
+    .chat-sidebar {
+      width: 25%;
+      background: rgba(255,255,255,0.9);
+      overflow-y: auto; border-right: 1px solid #ddd; padding: 10px;
+    }
+    .chat-main {
+      width: 75%;
+      display: flex;
+      flex-direction: column;
+      background: rgba(255,255,255,0.9);
+    }
+    .chat-header {
+      padding: 15px; border-bottom: 1px solid #ddd;
+      background: #f7f7f7; font-weight: bold;
+    }
+    .chat-messages {
+      flex: 1; padding: 10px; overflow-y: auto;
+      display: flex; flex-direction: column;
+      gap: 8px;
+    }
+    .message {
+      max-width: 70%;
+      padding: 8px 12px;
+      border-radius: 15px;
+      word-wrap: break-word;
+    }
+    .message.me { background: #DCF8C6; align-self: flex-end; }
+    .message.other { background: #FFF; align-self: flex-start; }
     .chat-input { display: flex; padding: 10px; border-top: 1px solid #ddd; }
-    .chat-input input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 20px; }
-    .chat-input button { margin-left: 10px; padding: 10px 20px; border: none;
-      border-radius: 20px; background: #4CAF50; color: white; cursor: pointer; }
+    .chat-input input {
+      flex: 1;
+      padding: 10px; border: 1px solid #ccc;
+      border-radius: 20px;
+    }
+    .chat-input button {
+      margin-left: 10px; padding: 10px 20px;
+      border: none; border-radius: 20px;
+      background: #4CAF50; color: white; cursor: pointer;
+    }
     .chat-input button:hover { background: #45a049; }
-    .user-row { padding: 8px; cursor: pointer; display: flex; align-items: center;
-      border-bottom: 1px solid #eee; }
+    .user-row {
+      padding: 8px; cursor: pointer;
+      display: flex; align-items: center;
+      border-bottom: 1px solid #eee;
+    }
     .user-row img { width: 32px; height: 32px; border-radius: 50%; margin-right: 8px; }
     .user-row:hover { background: #f0f0f0; }
-    .toast { visibility: hidden; min-width: 200px; background: #333; color: #fff;
+    .toast {
+      visibility: hidden;
+      min-width: 200px; background: #333; color: #fff;
       text-align: center; border-radius: 8px; padding: 10px;
-      position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%);
-      font-size: 14px; }
-    .toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+      position: fixed; left: 50%; bottom: 30px;
+      transform: translateX(-50%); font-size: 14px;
+    }
+    .toast.show {
+      visibility: visible;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
     @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
     @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
   </style>
@@ -76,20 +116,22 @@
     async function getChatUsers() {
       const { data, error } = await supabase
         .from('messages')
-        .select('sender_id, receiver_id, content, created_at')
-        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+        .select('sender_id, recipient_id, content, created_at')
+        .or(`sender_id.eq.${currentUser.id},recipient_id.eq.${currentUser.id}`)
         .order('created_at',{ascending:false});
       if (error) return [];
 
       const userMap = {};
       data.forEach(m => {
-        const other = m.sender_id === currentUser.id ? m.receiver_id : m.sender_id;
+        const other = m.sender_id === currentUser.id ? m.recipient_id : m.sender_id;
         if (!userMap[other]) userMap[other] = m;
       });
       const ids = Object.keys(userMap);
       if (!ids.length) return [];
 
-      const { data: users } = await supabase.from('users').select('id,name,profile_pic').in('id', ids);
+      const { data: users } = await supabase.from('users')
+        .select('id,name,profile_pic')
+        .in('id', ids);
       return users.map(u=>({...u,lastMessage:userMap[u.id].content,lastTime:userMap[u.id].created_at}));
     }
 
@@ -113,38 +155,40 @@
       const { data, error } = await supabase
         .from("messages")
         .select("*")
-        .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeChat}),and(sender_id.eq.${activeChat},receiver_id.eq.${currentUser.id})`)
+        .or(`and(sender_id.eq.${currentUser.id},recipient_id.eq.${activeChat}),and(sender_id.eq.${activeChat},recipient_id.eq.${currentUser.id})`)
         .order("created_at",{ascending:true});
       if(error){ showToast("Error loading messages"); return; }
 
       chatMessagesEl.innerHTML="";
       data.forEach(msg=>{
         const div=document.createElement("div");
-        div.textContent=(msg.sender_id===currentUser.id?"Me: ":""+recipientInfo.name+": ")+msg.content;
+        div.className = msg.sender_id===currentUser.id ? "message me" : "message other";
+        div.textContent = msg.content;
         chatMessagesEl.appendChild(div);
       });
-      chatMessagesEl.scrollTop=chatMessagesEl.scrollHeight;
+      chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
     }
 
     async function sendMessage(){
-      const content=messageInput.value.trim();
-      if(!content||!activeChat) return;
-      await supabase.from("messages").insert([{sender_id:currentUser.id,receiver_id:activeChat,content}]);
-      messageInput.value="";
+      const content = messageInput.value.trim();
+      if(!content || !activeChat) return;
+      const { error } = await supabase.from("messages")
+        .insert([{ sender_id: currentUser.id, recipient_id: activeChat, content }]);
+      if(error) { showToast("Failed to send message"); return; }
+      messageInput.value = "";
       loadMessages();
     }
 
-    sendBtn.addEventListener("click",sendMessage);
-    messageInput.addEventListener("keydown",e=>{if(e.key==="Enter")sendMessage();});
+    sendBtn.addEventListener("click", sendMessage);
+    messageInput.addEventListener("keydown", e=>{ if(e.key==="Enter") sendMessage(); });
 
     window.addEventListener("DOMContentLoaded", async ()=>{
       await loadCurrentUser();
-      const users=await getChatUsers();
-      chatListEl.innerHTML=users.length?"":"No chats yet.";
+      const users = await getChatUsers();
+      chatListEl.innerHTML = users.length ? "" : "No chats yet.";
       users.forEach(renderUserRow);
-      setInterval(()=>{ if(activeChat) loadMessages(); },3000);
+      setInterval(()=>{ if(activeChat) loadMessages(); }, 3000);
     });
   </script>
 </body>
 </html>
-
