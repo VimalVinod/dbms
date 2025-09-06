@@ -1,131 +1,136 @@
-import { supabase } from "./supabase.js"
+// js/auth.js
+import { supabase } from "./supabase.js";
 
 // 🔹 Sign Up User
-export async function signUpUser(name, email, password, skills, about) {
-  // 1. Register with Supabase Auth
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password
-  })
-
-  if (error) {
-    console.error("Supabase Auth Signup Error:", error)
-    alert("Signup Error: " + error.message)
-    return null
-  }
-
-  // 2. Save extra info in "users" table
-  if (data.user) {
-    const { error: dbError } = await supabase.from("users").insert([
-      {
-        id: data.user.id,   // Supabase Auth ID
-        name,
-        email,
-        skills,
-        about
-      }
-    ])
-    if (dbError) {
-      console.error("DB Insert Error:", dbError)
-      alert("Database Error: " + dbError.message)
+export async function signUpUser(name, email, password, skills = null, about = null) {
+  try {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      console.error("Signup Error:", error);
+      alert("Signup Error: " + error.message);
+      return null;
     }
-  } else {
-    console.error("No user returned from Supabase signup:", data)
-    alert("Signup failed: No user returned.")
-    return null
-  }
 
-  return data.user
+    if (data.user) {
+      const { error: dbError } = await supabase.from("users").insert([
+        { id: data.user.id, name, email, skills, about }
+      ]);
+      if (dbError) {
+        console.error("DB Insert Error:", dbError);
+        alert("Database Error: " + dbError.message);
+      }
+      return data.user;
+    } else {
+      alert("Signup failed: No user returned.");
+      return null;
+    }
+  } catch (err) {
+    console.error("Unexpected Signup Error:", err);
+    alert("Signup failed. Check console for details.");
+    return null;
+  }
 }
 
 // 🔹 Login User
 export async function loginUser(email, password) {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  })
-
-  if (error) {
-    alert("Login Failed: " + error.message)
-    return null
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      alert("Login Failed: " + error.message);
+      return null;
+    }
+    return data.user;
+  } catch (err) {
+    console.error("Login Error:", err);
+    alert("Login failed. Check console.");
+    return null;
   }
-
-  return data.user
 }
 
 // 🔹 Get Current User
 export async function getCurrentUser() {
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
+  try {
+    const { data } = await supabase.auth.getUser();
+    return data.user || null;
+  } catch (err) {
+    console.error("Get Current User Error:", err);
+    return null;
+  }
 }
 
 // 🔹 Logout User
 export async function logoutUser() {
-  await supabase.auth.signOut()
-  window.location.href = "index.html"
+  try {
+    await supabase.auth.signOut();
+    window.location.href = "index.html";
+  } catch (err) {
+    console.error("Logout Error:", err);
+    alert("Logout failed.");
+  }
 }
 
-// 🔹 Example: Fetch Services
-// 🔹 Fetch services (no profiles join)
+// 🔹 Fetch All Services
 export async function getAllServices() {
-  const { data, error } = await supabase
-    .from('services')
-    .select('id, title, description, price, user_id'); // only real columns
+  try {
+    const { data, error } = await supabase
+      .from("services")
+      .select(`
+        id,
+        title,
+        description,
+        price,
+        created_at,
+        user_id ( name, email )
+      `)
+      .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching services:", error.message);
+    if (error) {
+      console.error("Fetch Services Error:", error.message);
+      return [];
+    }
+    return data;
+  } catch (err) {
+    console.error("Unexpected Fetch Services Error:", err);
     return [];
   }
-  return data;
-}
-
-  if (error) {
-    console.error(error);
-    return [];
-  }
-  return data;
 }
 
 // 🔹 Update User Profile
 export async function updateUserProfile(id, name, skills, about, profilePicUrl) {
-  // Convert skills to array if it's a string
-  let skillsArray = skills;
-  if (typeof skills === "string") {
-    skillsArray = skills.split(",").map(s => s.trim()).filter(Boolean);
-  }
-  const { error } = await supabase.from("users")
-    .update({
-      name,
-      skills: skillsArray,
-      about,
-      profile_pic: profilePicUrl
-    })
-    .eq("id", id);
-  if (error) {
-    alert("Profile update failed: " + error.message);
+  try {
+    const skillsArray = typeof skills === "string"
+      ? skills.split(",").map(s => s.trim()).filter(Boolean)
+      : skills;
+
+    const { error } = await supabase.from("users")
+      .update({ name, skills: skillsArray, about, profile_pic: profilePicUrl })
+      .eq("id", id);
+
+    if (error) {
+      alert("Profile update failed: " + error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("Profile Update Error:", err);
     return false;
   }
-  return true;
 }
 
-// 🔹 Attach signup to button (for direct HTML usage)
+// 🔹 DOMContentLoaded helper for signup button
 document.addEventListener("DOMContentLoaded", () => {
-  const signupBtn = document.getElementById("signupBtn")
+  const signupBtn = document.getElementById("signupBtn");
   if (signupBtn) {
     signupBtn.addEventListener("click", async () => {
-      const name = document.getElementById("name").value.trim()
-      const email = document.getElementById("email").value.trim()
-      const password = document.getElementById("password").value
-      // Pass null for skills and about to avoid malformed array literal error
-      const user = await signUpUser(name, email, password, null, null)
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      const user = await signUpUser(name, email, password);
       if (user) {
-        alert("Signup successful! Please check your email for confirmation.")
-        window.location.href = "index.html"
+        alert("Signup successful! Please check your email for confirmation.");
+        window.location.href = "index.html";
       }
-    })
+    });
   }
-})
-
-
-
-
+});
