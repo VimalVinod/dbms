@@ -13,7 +13,7 @@ function signup() {
   localStorage.setItem('users', JSON.stringify(users));
 
   alert('Signup successful!');
-  window.location.href = 'login.html';
+  window.location.href = 'index.html';
 }
 
 // ---------- Login ----------
@@ -39,7 +39,7 @@ function postService() {
   localStorage.setItem('services', JSON.stringify(services));
 
   alert('Service posted successfully!');
-  window.location.href = 'index.html';
+  window.location.href = 'dashboard.html';
 }
 
 // ---------- Display Services ----------
@@ -93,7 +93,7 @@ function displayProfile() {
 }
 
 // ---------- Logout ----------
-function logout() { localStorage.removeItem('currentUser'); window.location.href = 'login.html'; }
+function logout() { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; }
 
 // ---------- On Load ----------
 window.onload = function() {
@@ -101,3 +101,4 @@ window.onload = function() {
   displayRequests();
   displayProfile();
 }
+
