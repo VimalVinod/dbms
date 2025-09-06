@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>SkillShareboard - Dashboard</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <meta charset="UTF-8">
+  <title>SkillShareboard</title>
+  <link rel="stylesheet" href="css/style.css">
   <style>
     .card {
       border: 1px solid #ddd;
@@ -44,10 +44,8 @@
       <h2>Welcome to SkillShareboard</h2>
       <p>
         SkillShareboard is your platform to offer and request services, connect with talented people, and grow together. Browse available services below or post your own to get started!
-        <br />
-        <span style="color:brown;font-weight:bold;">
-          (NB: Still a work in progress - more features coming soon! Please report any bugs or issues to the developer [ishtampole ond.])
-        </span>
+        <br>
+        <span style="color: brown; font-weight:bold;">(NB: Still a work in progress - more features coming soon! Please report any bugs or issues to the developer.)</span>
       </p>
     </section>
 
@@ -61,62 +59,61 @@
     import { supabase } from './js/supabase.js';
     import { getAllServices } from './js/auth.js';
 
-    // Protect dashboard: redirect to login if not logged in
+    // 1️⃣ Protect page
     (async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error) console.error(error);
-      if (!user) {
-        window.location.href = 'index.html';
-        return;
-      }
-      // load services only after auth check
-      loadServices();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) window.location.href = "login.html";
     })();
 
-    // Logout
-    document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+    // 2️⃣ Logout
+    document.getElementById('logoutBtn').addEventListener('click', async e => {
       e.preventDefault();
       await supabase.auth.signOut();
-      window.location.href = 'index.html';
+      window.location.href = "login.html";
     });
 
+    // 3️⃣ Load services
     async function loadServices() {
+      const services = await getAllServices();
       const list = document.getElementById('services-list');
-      list.textContent = 'Loading services...';
-
-      try {
-        const services = await getAllServices();
-        console.log('Fetched services:', services);
-        list.innerHTML = '';
-
-        if (!services || services.length === 0) {
-          list.textContent = 'No services available.';
-          return;
-        }
-
-        services.forEach((svc) => {
-          const div = document.createElement('div');
-          div.className = 'card';
-          div.innerHTML = `
-            <h3>${svc.title ?? '(Untitled service)'}</h3>
-            <p>${svc.description ?? ''}</p>
-            <strong>Price: ₹${svc.price ?? '—'}</strong>
-            <p style="font-size:0.95em;color:#2575fc;margin-top:6px;">
-              User ID: ${svc.user_id ?? 'unknown'}
-            </p>
-            <a href="chat.html?user_id=${encodeURIComponent(svc.user_id ?? '')}"
-               class="button-link"
-               style="margin-top:8px;display:inline-block;">
-               Contact
-            </a>
-          `;
-          list.appendChild(div);
-        });
-      } catch (err) {
-        console.error(err);
-        list.textContent = 'Failed to load services.';
+      list.innerHTML = '';
+      if (!services || services.length === 0) {
+        list.textContent = "No services available.";
+        return;
       }
+      services.forEach(svc => {
+        const div = document.createElement('div');
+        div.className = 'card';
+
+        // Use email instead of user_id
+        const userEmail = svc.user_id?.email || '';
+        const userName = svc.user_id?.name || 'Unknown';
+
+        div.innerHTML = `
+          <h3>${svc.title}</h3>
+          <p>${svc.description}</p>
+          <strong>Price: ₹${svc.price}</strong>
+          <p style="font-size:0.95em;color:#2575fc;">
+            By: ${userName}
+            ${userEmail ? `<br><span style="color:#1f2937;font-size:0.95em;">Email: ${userEmail}</span>` : ''}
+          </p>
+        `;
+
+        // Create Contact button
+        const btn = document.createElement('button');
+        btn.className = 'button-link';
+        btn.textContent = 'Contact';
+        btn.addEventListener('click', () => {
+          sessionStorage.setItem('chatUserEmail', userEmail);
+          window.location.href = 'chat.html';
+        });
+
+        div.appendChild(btn);
+        list.appendChild(div);
+      });
     }
+
+    loadServices();
   </script>
 </body>
 </html>
