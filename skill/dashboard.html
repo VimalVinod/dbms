@@ -87,23 +87,27 @@
         return;
       }
       services.forEach(svc => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.innerHTML = `
-          <h3>${svc.title}</h3>
-          <p>${svc.description}</p>
-          <strong>Price: ₹${svc.price}</strong>
-          <p style="font-size:0.95em;color:#2575fc;">
-            By: ${svc.user_id?.name || 'Unknown'}
-            ${svc.user_id?.email ? `<br><span style="color:#1f2937;font-size:0.95em;">Email: ${svc.user_id.email}</span>` : ''}
-          </p>
-          <a href="chat.html?user_id=${svc.user_id?.id || ''}" class="button-link" style="margin-top:8px;display:inline-block;">Contact</a>
-        `;
-        list.appendChild(div);
-      });
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.innerHTML = `
+    <h3>${svc.title}</h3>
+    <p>${svc.description}</p>
+    <strong>Price: ₹${svc.price}</strong>
+    <p style="font-size:0.95em;color:#2575fc;">
+      By: ${svc.profiles?.name || 'Unknown'}
+      ${svc.profiles?.email ? `<br><span style="color:#1f2937;font-size:0.95em;">Email: ${svc.profiles.email}</span>` : ''}
+    </p>
+    <a href="chat.html?user_id=${svc.profiles?.id || svc.user_id}" 
+       class="button-link" 
+       style="margin-top:8px;display:inline-block;">Contact</a>
+  `;
+  list.appendChild(div);
+});
     }
+   }
 
     loadServices();
   </script>
 </body>
 </html>
+
