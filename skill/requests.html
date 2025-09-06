@@ -172,6 +172,7 @@
     <h2>Request Board</h2>
     <div id="requests-list"></div>
   </main>
+
 <script type="module">
 import { supabase } from './js/supabase.js';
 import { getCurrentUser } from './js/auth.js';
@@ -203,13 +204,16 @@ async function loadRequests() {
       ? `${req.user.name} (${req.user.email})` 
       : `User ID: ${req.user_id}`;
 
-    // Contact button redirects to chat.html
+    // Contact button opens chat with that user
     const contactButton = document.createElement('button');
     contactButton.textContent = 'Contact';
     contactButton.addEventListener('click', () => {
-      // Pass user ID in query params
-      let url = `chat.html?user=${req.user_id}`;
-      window.location.href = url;
+      if(req.user?.email){
+        sessionStorage.setItem('chatUserEmail', req.user.email);
+        window.location.href = 'chat.html';
+      } else {
+        alert("Cannot contact this user (email not available).");
+      }
     });
 
     div.innerHTML = `
@@ -270,7 +274,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 </script>
 
-  <script src="js/script.js"></script>
+<script src="js/script.js"></script>
 </body>
 </html>
-
