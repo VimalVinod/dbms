@@ -2,10 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SkillShareboard</title>
+  <title>SkillShareboard - Dashboard</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* Minimal styling for cards and buttons */
     .card {
       border: 1px solid #ddd;
       border-radius: 8px;
@@ -62,11 +61,11 @@
     import { supabase } from './js/supabase.js';
     import { getAllServices } from './js/auth.js';
 
-    // 1️⃣ Protect page: redirect to login if not logged in
+    // 1️⃣ Protect dashboard: redirect to login if not logged in
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        window.location.href = "index.html";
+        window.location.href = "index.html"; // back to login
       }
     })();
 
@@ -74,7 +73,7 @@
     document.getElementById('logoutBtn').addEventListener('click', async e => {
       e.preventDefault();
       await supabase.auth.signOut();
-      window.location.href = "index.html";
+      window.location.href = "index.html"; // back to login
     });
 
     // 3️⃣ Load and display services
