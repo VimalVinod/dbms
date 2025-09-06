@@ -70,7 +70,7 @@
     async function loadCurrentUser() {
       const { data } = await supabase.auth.getUser();
       currentUser = data?.user;
-      if (!currentUser) { showToast("Login required."); window.location.href="login.html"; }
+      if (!currentUser) { showToast("Login required."); window.location.href="index.html"; }
     }
 
     async function getChatUsers() {
@@ -147,3 +147,4 @@
   </script>
 </body>
 </html>
+
