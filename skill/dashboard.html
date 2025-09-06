@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SkillShareboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Minimal styling for cards and buttons */
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .button-link {
+      display: inline-block;
+      padding: 8px 16px;
+      background: #2575fc;
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    header nav a {
+      margin-right: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-content">
+      <h1>SkillShareboard</h1>
+      <p class="subtitle">Connect, share, and discover skills in your community!</p>
+      <nav>
+        <a href="profile.html">Profile</a>
+        <a href="post-service.html">Post Service</a>
+        <a href="requests.html">Requests</a>
+        <a href="chat.html">Chat</a>
+        <a href="#" id="logoutBtn">Logout</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="description">
+      <h2>Welcome to SkillShareboard</h2>
+      <p>
+        SkillShareboard is your platform to offer and request services, connect with talented people, and grow together. Browse available services below or post your own to get started!
+        <br>
+        <span style="color: brown; font-weight:bold;">(NB: Still a work in progress - more features coming soon! Please report any bugs or issues to the developer [ishtampole ond.])</span>
+      </p>
+    </section>
+
+    <section>
+      <h2>Available Services</h2>
+      <div id="services-list">Loading services...</div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { supabase } from './js/supabase.js';
+    import { getAllServices } from './js/auth.js';
+
+    // 1️⃣ Protect page: redirect to login if not logged in
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    })();
+
+    // 2️⃣ Logout function
+    document.getElementById('logoutBtn').addEventListener('click', async e => {
+      e.preventDefault();
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+    });
+
+    // 3️⃣ Load and display services
+    async function loadServices() {
+      const services = await getAllServices();
+      const list = document.getElementById('services-list');
+      list.innerHTML = '';
+      if (!services || services.length === 0) {
+        list.textContent = "No services available.";
+        return;
+      }
+      services.forEach(svc => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+          <h3>${svc.title}</h3>
+          <p>${svc.description}</p>
+          <strong>Price: ₹${svc.price}</strong>
+          <p style="font-size:0.95em;color:#2575fc;">
+            By: ${svc.user_id?.name || 'Unknown'}
+            ${svc.user_id?.email ? `<br><span style="color:#1f2937;font-size:0.95em;">Email: ${svc.user_id.email}</span>` : ''}
+          </p>
+          <a href="chat.html?user_id=${svc.user_id?.id || ''}" class="button-link" style="margin-top:8px;display:inline-block;">Contact</a>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    loadServices();
+  </script>
+</body>
+</html>
