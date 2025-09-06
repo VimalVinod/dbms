@@ -68,23 +68,25 @@ export async function logoutUser() {
 // 🔹 Example: Fetch Services
 export async function getAllServices() {
   const { data, error } = await supabase
-    .from("services")
+    .from('services')
     .select(`
       id,
       title,
       description,
       price,
-      created_at,
-      user_id ( name, email )   -- assuming services.user_id → users.id
-    `)
-    .order("created_at", { ascending: false })
+      user_id,
+      profiles (
+        id,
+        name,
+        email
+      )
+    `);
 
   if (error) {
-    console.error("Error fetching services:", error.message)
-    return []
+    console.error(error);
+    return [];
   }
-
-  return data
+  return data;
 }
 
 // 🔹 Update User Profile
@@ -126,5 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 })
+
 
 
