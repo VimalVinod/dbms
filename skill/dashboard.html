@@ -66,7 +66,7 @@
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        window.location.href = "login.html";
+        window.location.href = "index.html";
       }
     })();
 
@@ -74,7 +74,7 @@
     document.getElementById('logoutBtn').addEventListener('click', async e => {
       e.preventDefault();
       await supabase.auth.signOut();
-      window.location.href = "login.html";
+      window.location.href = "index.html";
     });
 
     // 3️⃣ Load and display services
@@ -82,32 +82,33 @@
       const services = await getAllServices();
       const list = document.getElementById('services-list');
       list.innerHTML = '';
+
       if (!services || services.length === 0) {
         list.textContent = "No services available.";
         return;
       }
+
       services.forEach(svc => {
-  const div = document.createElement('div');
-  div.className = 'card';
-  div.innerHTML = `
-    <h3>${svc.title}</h3>
-    <p>${svc.description}</p>
-    <strong>Price: ₹${svc.price}</strong>
-    <p style="font-size:0.95em;color:#2575fc;">
-      By: ${svc.profiles?.name || 'Unknown'}
-      ${svc.profiles?.email ? `<br><span style="color:#1f2937;font-size:0.95em;">Email: ${svc.profiles.email}</span>` : ''}
-    </p>
-    <a href="chat.html?user_id=${svc.profiles?.id || svc.user_id}" 
-       class="button-link" 
-       style="margin-top:8px;display:inline-block;">Contact</a>
-  `;
-  list.appendChild(div);
-});
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+          <h3>${svc.title}</h3>
+          <p>${svc.description}</p>
+          <strong>Price: ₹${svc.price}</strong>
+          <p style="font-size:0.95em;color:#2575fc;">
+            By: ${svc.profiles?.name || 'Unknown'}
+            ${svc.profiles?.email ? `<br><span style="color:#1f2937;font-size:0.95em;">Email: ${svc.profiles.email}</span>` : ''}
+          </p>
+          <a href="chat.html?user_id=${svc.profiles?.id || svc.user_id}" 
+             class="button-link" 
+             style="margin-top:8px;display:inline-block;">Contact</a>
+        `;
+        list.appendChild(div);
+      });
     }
 
+    // 4️⃣ Call it on page load
     loadServices();
   </script>
 </body>
 </html>
-
-
