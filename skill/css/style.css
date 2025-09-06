@@ -1,0 +1,242 @@
+/* Import Poppins font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+/* Global Styles */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+  font-family: 'Poppins', sans-serif; 
+  background: linear-gradient(120deg, #8acb11 0%, #14d89d 100%);
+  color: #222; 
+  line-height: 1.6; 
+  min-height: 100vh;
+}
+
+/* Header Styles */
+.main-header {
+  background: rgba(31,41,55,0.98);
+  color: #fff;
+  padding: 30px 0 20px 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border-bottom: 4px solid #4CAF50;
+}
+
+.header-content {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.main-header h1 {
+  font-size: 2.8rem;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: #81d421;
+  margin-bottom: 18px;
+  font-weight: 500;
+}
+
+nav {
+  margin-top: 10px;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  margin: 0 18px;
+  font-weight: 500;
+  font-size: 1.08rem;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+nav a:hover {
+  background: #4CAF50;
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Main Content Styles */
+main {
+  max-width: 900px;
+  margin: 40px auto 0 auto;
+  padding: 0 20px;
+}
+
+.description {
+  background: rgba(255,255,255,0.95);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  padding: 32px 24px;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.description h2 {
+  color: #1f2937;
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.description p {
+  color: #2575fc;
+  font-size: 1.1rem;
+}
+
+section h2 {
+  color: #1f2937;
+  font-size: 1.7rem;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+#services-list {
+  margin-top: 18px;
+}
+
+/* Card Styles */
+.card { 
+  background: #fff; 
+  padding: 20px; 
+  border-radius: 10px; 
+  border-left: 5px solid #4CAF50; 
+  margin-bottom: 15px; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+  width: 100%;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.card h3 { 
+  margin-bottom: 10px; 
+  color: #2575fc;
+}
+
+.card p, .card strong { 
+  margin-bottom: 5px; 
+}
+
+input, textarea, button { 
+  width: 100%; 
+  padding: 12px; 
+  margin-bottom: 15px; 
+  border-radius: 8px; 
+  border: 1px solid #ccc; 
+  font-size: 16px; 
+  font-family: 'Poppins', sans-serif;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+input:focus, textarea:focus { 
+  border-color: #4CAF50; 
+  outline: none; 
+}
+
+button { 
+  background-color: #4CAF50; 
+  color: white; 
+  border: none; 
+  font-size: 16px; 
+  cursor: pointer; 
+  font-weight: 500;
+  transition: 0.3s; 
+}
+
+button:hover { 
+  background-color: #45a049; 
+}
+
+a.button-link { 
+  display: inline-block; 
+  text-decoration: none; 
+  text-align: center; 
+  padding: 10px 20px; 
+  background-color: #2575fc; 
+  color: white; 
+  border-radius: 8px; 
+  transition: 0.3s; 
+}
+
+a.button-link:hover { 
+  background-color: #1dcc97; 
+}
+
+footer { 
+  text-align: center; 
+  padding: 20px; 
+  color: white; 
+  margin-top: 50px; 
+  background: rgba(31,41,55,0.98);
+  border-top: 2px solid #4CAF50;
+}
+
+/* Bootstrap overrides for custom colors */
+.btn-primary, .button-link {
+  background-color: #2575fc !important;
+  border-color: #2575fc !important;
+  color: #fff !important;
+}
+.btn-success {
+  background-color: #4CAF50 !important;
+  border-color: #4CAF50 !important;
+}
+.btn-success:hover {
+  background-color: #45a049 !important;
+  border-color: #45a049 !important;
+}
+.bg-gradient-custom {
+  background: linear-gradient(120deg, #8acb11 0%, #14d89d 100%);
+}
+
+/* Responsive container for main content */
+.container, .container-fluid {
+  max-width: 900px;
+  margin: 40px auto 0 auto;
+  padding: 0 20px;
+}
+
+/* Responsive images */
+img, .img-fluid {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Modal responsiveness */
+#editProfileModal > div {
+  max-width: 95vw;
+  width: 100%;
+}
+
+/* Utility classes for spacing */
+.mt-2 { margin-top: .5rem !important; }
+.mt-3 { margin-top: 1rem !important; }
+.mb-2 { margin-bottom: .5rem !important; }
+.mb-3 { margin-bottom: 1rem !important; }
+.p-2 { padding: .5rem !important; }
+.p-3 { padding: 1rem !important; }
+
+/* Hide scrollbars on mobile modals */
+@media (max-width: 576px) {
+  #editProfileModal > div {
+    padding: 16px 8px;
+  }
+  .main-header h1 { font-size: 1.5rem; }
+  .container, .container-fluid { padding: 0 4px; }
+  .description { padding: 12px 4px; }
+  nav a { margin: 0 4px; font-size: 1rem; padding: 6px 10px; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  main { padding: 0 8px; }
+  .header-content { padding: 0 8px; }
+  .description { padding: 18px 8px; }
+  nav a { margin: 0 8px; }
+  .main-header h1 { font-size: 2rem; }
+}

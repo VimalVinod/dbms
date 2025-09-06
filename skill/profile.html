@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Profile</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Quick modal fix */
+    #editProfileModal {
+      display: none;
+      position: fixed;
+      top:0;
+      left:0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.3);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+    #editProfileModal .modal-content {
+      background:#fff;
+      padding: 32px 24px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 100%;
+      position: relative;
+    }
+    .button-link {
+      display: inline-block;
+      padding: 8px 16px;
+      background: #2575fc;
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .card { padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:12px; }
+  </style>
+</head>
+<body>
+<header class="main-header">
+  <div class="header-content">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="post-service.html">Post Service</a>
+      <a href="requests.html">Requests</a>
+      <a href="chat.html">Chat</a>
+      <a href="#" id="logoutBtn">Logout</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="container" style="max-width:600px;">
+    <div style="text-align:center;">
+      <img src="https://ui-avatars.com/api/?name=User+Name&background=81d421&color=fff&size=120" alt="User Avatar" id="profileAvatar" style="border-radius:50%;margin-bottom:18px;">
+      <h2 id="profileName">User Name</h2>
+      <p id="profileAbout" style="color:#2575fc;margin-bottom:18px;">Skill Enthusiast | Web Developer | Community Helper</p>
+      <a href="#" class="button-link" id="editProfileBtn" style="margin-bottom:18px;">Edit Profile</a>
+      <button class="button-link" id="viewServicesBtn" style="margin-bottom:18px;">View Posted Services</button>
+      <div class="card" style="margin-bottom:18px;">
+        <h4>Contact Details</h4>
+        <p>Email: <span id="profileEmail">user@email.com</span></p>
+        <p>Phone: <span id="profilePhone">Not provided</span></p>
+      </div>
+      <div class="card" style="margin-bottom:18px;">
+        <h4>Projects</h4>
+        <ul id="projectsList">
+          <li>Portfolio Website</li>
+          <li>Design System</li>
+        </ul>
+      </div>
+    </div>
+
+    <hr style="margin:24px 0;">
+    <section>
+      <h3 style="color:#1f2937;">Your Skills</h3>
+      <ul id="skillsList" style="margin-bottom:18px;">
+        <li>Web Development</li>
+        <li>Graphic Design</li>
+        <li>Public Speaking</li>
+      </ul>
+      <h3 style="color:#1f2937;">Your Services</h3>
+      <div id="servicesList">
+        <div class="card">
+          <h4>Website Creation</h4>
+          <p>Build modern, responsive websites for individuals and small businesses.</p>
+        </div>
+        <div class="card">
+          <h4>Logo Design</h4>
+          <p>Design creative logos to help your brand stand out.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="editProfileModal">
+    <div class="modal-content">
+      <h3 style="margin-bottom:18px;">Edit Profile</h3>
+      <form id="editProfileForm">
+        <label>Name:</label>
+        <input type="text" id="editName" style="width:100%;margin-bottom:12px;">
+        <label>Skills (comma separated):</label>
+        <input type="text" id="editSkills" style="width:100%;margin-bottom:12px;">
+        <label>About:</label>
+        <textarea id="editAbout" style="width:100%;margin-bottom:12px;"></textarea>
+        <label>Projects (comma separated):</label>
+        <input type="text" id="editProjects" style="width:100%;margin-bottom:12px;">
+        <label>Services (comma separated):</label>
+        <input type="text" id="editServices" style="width:100%;margin-bottom:12px;">
+        <label>Phone:</label>
+        <input type="text" id="editPhone" style="width:100%;margin-bottom:12px;">
+        <label>Profile Picture:</label>
+        <input type="file" id="editProfilePic" accept="image/*" style="margin-bottom:12px;">
+        <img id="profilePicPreview" src="" alt="Preview" style="display:none;width:80px;height:80px;border-radius:50%;margin-bottom:12px;">
+        <div style="text-align:right;">
+          <button type="button" id="closeModalBtn" style="margin-right:8px;">Cancel</button>
+          <button type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+import { supabase } from './js/supabase.js'
+import { getCurrentUser, updateUserProfile } from './js/auth.js'
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  const { error } = await supabase.auth.signOut();
+  if (!error) window.location.href = 'index.html';
+});
+
+// Modal logic
+const editBtn = document.getElementById("editProfileBtn");
+const modal = document.getElementById("editProfileModal");
+const closeBtn = document.getElementById("closeModalBtn");
+const form = document.getElementById("editProfileForm");
+const picInput = document.getElementById("editProfilePic");
+const picPreview = document.getElementById("profilePicPreview");
+
+editBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  modal.style.display = "flex";
+});
+
+closeBtn.addEventListener("click", () => {
+  modal.style.display = "none";
+  picPreview.style.display = "none";
+});
+
+picInput.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      picPreview.src = evt.target.result;
+      picPreview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  } else {
+    picPreview.style.display = "none";
+  }
+});
+
+// Save profile
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = document.getElementById("editName").value.trim();
+  const skills = document.getElementById("editSkills").value.trim();
+  const about = document.getElementById("editAbout").value.trim();
+  const projects = document.getElementById("editProjects").value.trim();
+  const services = document.getElementById("editServices").value.trim();
+  const phone = document.getElementById("editPhone").value.trim();
+  const file = picInput.files[0];
+  let profilePicUrl = null;
+
+  const user = await getCurrentUser();
+  if (!user) { alert("Not logged in."); return; }
+
+  if (file) {
+    const { data, error } = await supabase.storage
+      .from('profile_pic')
+      .upload(`user_${user.id}/${file.name}`, file, { upsert: true });
+    if (error) { alert("Image upload failed: " + error.message); return; }
+    const { data: urlData } = supabase.storage
+      .from('profile_pic')
+      .getPublicUrl(`user_${user.id}/${file.name}`);
+    profilePicUrl = urlData.publicUrl;
+  }
+
+  const ok = await updateUserProfile(user.id, name, skills, about, profilePicUrl, projects, services, phone);
+  if (ok) {
+    alert("Profile updated!");
+    modal.style.display = "none";
+
+    document.getElementById('profileAvatar').src = profilePicUrl || document.getElementById('profileAvatar').src;
+    document.getElementById('profileName').textContent = name;
+    document.getElementById('profileAbout').textContent = about;
+    document.getElementById('profilePhone').textContent = phone || "Not provided";
+
+    const skillsList = document.getElementById('skillsList');
+    skillsList.innerHTML = '';
+    skills.split(',').forEach(skill => { 
+      if(skill.trim()) {
+        const li = document.createElement('li'); li.textContent = skill.trim(); 
+        skillsList.appendChild(li);
+      }
+    });
+
+    const projectsList = document.getElementById('projectsList');
+    projectsList.innerHTML = '';
+    projects.split(',').forEach(p => {
+      if(p.trim()) {
+        const li = document.createElement('li'); li.textContent = p.trim(); 
+        projectsList.appendChild(li);
+      }
+    });
+
+    const servicesContainer = document.getElementById('servicesList');
+    servicesContainer.innerHTML = '';
+    services.split(',').forEach(s => {
+      if(s.trim()){
+        const div = document.createElement('div'); div.className='card';
+        div.innerHTML = `<h4>${s.trim()}</h4><p>Description pending.</p>`;
+        servicesContainer.appendChild(div);
+      }
+    });
+  }
+});
+
+// View Posted Services button
+document.getElementById('viewServicesBtn').addEventListener('click', () => {
+  const servicesSection = document.getElementById('servicesList');
+  servicesSection.scrollIntoView({behavior:'smooth'});
+});
+
+// Fill contact details on load
+(async () => {
+  const user = await getCurrentUser();
+  if (user) {
+    document.getElementById('profileEmail').textContent = user.email || 'Not provided';
+    // If you store phone/projects/services in DB, fetch and show here
+  }
+})();
+</script>
+</body>
+</html>

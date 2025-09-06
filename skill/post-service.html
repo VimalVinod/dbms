@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Post Service</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-content">
+      <h1>Post a Service</h1>
+      <p class="subtitle">Share your skills and help your community grow!</p>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="profile.html">Profile</a>
+        <a href="requests.html">Requests</a>
+        <a href="chat.html">Chat</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <div class="container" style="max-width:500px;">
+      <form id="serviceForm">
+        <h2 style="text-align:center;">Post a New Service</h2>
+        <input type="text" id="title" placeholder="Service Title" required>
+        <textarea id="description" placeholder="Service Description" required></textarea>
+        <input type="number" id="price" placeholder="Price (₹)" min="0" required>
+        <button type="submit">Post Service</button>
+        <a href="index.html" class="button-link" style="margin-top:10px;">Back to Home</a>
+      </form>
+    </div>
+  </main>
+  <script type="module">
+    import { supabase } from './js/supabase.js';
+    import { getCurrentUser } from './js/auth.js';
+
+    document.getElementById('serviceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const price = parseFloat(document.getElementById('price').value);
+      const user = await getCurrentUser();
+      if (!user) {
+        alert("You must be logged in to post a service.");
+        return;
+      }
+      const { error } = await supabase.from('services').insert([{
+        title,
+        description,
+        price,
+        user_id: user.id
+      }]);
+      if (error) {
+        alert("Failed to post service: " + error.message);
+      } else {
+        alert("Service posted successfully!");
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+</body>
+</html>

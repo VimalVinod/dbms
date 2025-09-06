@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Requests</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(120deg, #8acb11 0%, #14d89d 100%);
+      color: #222;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    .main-header {
+      background: rgba(31,41,55,0.98);
+      color: #fff;
+      padding: 30px 0 20px 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border-bottom: 4px solid #4CAF50;
+      text-align: center;
+    }
+    .main-header h1 {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      font-size: 1.1rem;
+      color: #81d421;
+      margin-bottom: 14px;
+      font-weight: 500;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 14px;
+      font-weight: 500;
+      font-size: 1rem;
+      padding: 6px 14px;
+      border-radius: 6px;
+      transition: background 0.2s, color 0.2s;
+    }
+    nav a:hover {
+      background: #4CAF50;
+      color: #fff;
+    }
+    main {
+      max-width: 800px;
+      margin: 40px auto 0 auto;
+      padding: 0 18px;
+    }
+    h2 {
+      text-align: center;
+      color: #1f2937;
+      font-size: 1.6rem;
+      margin-bottom: 18px;
+    }
+    #requests-list {
+      margin-bottom: 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .card h3 {
+      color: #2575fc;
+      margin-bottom: 6px;
+    }
+    .card p {
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+      color: #333;
+    }
+    .card .user-info {
+      font-size: 0.85rem;
+      color: #555;
+      font-style: italic;
+    }
+    .card button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: 0.3s;
+      align-self: flex-start;
+    }
+    .card button:hover {
+      background-color: #45a049;
+    }
+    .container {
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+      padding: 28px 22px;
+      margin-bottom: 32px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    input, textarea, button, select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      font-family: 'Poppins', sans-serif;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: #4CAF50;
+      outline: none;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    @media (max-width: 768px) {
+      main { padding: 0 6px; }
+      .container { padding: 14px 6px; }
+      nav a { margin: 0 6px; }
+      .main-header h1 { font-size: 1.3rem; }
+      #requests-list { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="main-header">
+    <h1>Requests</h1>
+    <p class="subtitle">Find help or offer your support to others!</p>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="post-service.html">Post Service</a>
+      <a href="profile.html">Profile</a>
+      <a href="chat.html">Chat</a>
+      <a href="#" onclick="logout()">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="container">
+      <h3>Post a Request</h3>
+      <form id="requestForm">
+        <input type="text" id="title" placeholder="Request Title" required>
+        <textarea id="description" placeholder="Request Description" required></textarea>
+        <input type="number" id="maxFund" placeholder="Max Fund (₹)" required min="0">
+        <input type="text" id="place" placeholder="Place / Location" required>
+        <button type="submit">Post Request</button>
+      </form>
+    </div>
+
+    <h2>Request Board</h2>
+    <div id="requests-list"></div>
+  </main>
+<script type="module">
+import { supabase } from './js/supabase.js';
+import { getCurrentUser } from './js/auth.js';
+
+async function loadRequests() {
+  let { data, error } = await supabase
+    .from('requests')
+    .select('title, description, max_fund, place, user_id, user:user_id(name, email)'); 
+
+  const list = document.getElementById('requests-list');
+  list.innerHTML = '';
+
+  if (error) {
+    console.error("Failed to load requests:", error.message);
+    list.textContent = "Failed to load requests. Please try again later.";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    list.textContent = "No requests yet. Be the first to post one!";
+    return;
+  }
+
+  data.forEach(req => {
+    const div = document.createElement('div');
+    div.className = 'card';
+
+    const userInfo = req.user 
+      ? `${req.user.name} (${req.user.email})` 
+      : `User ID: ${req.user_id}`;
+
+    // Contact button redirects to chat.html
+    const contactButton = document.createElement('button');
+    contactButton.textContent = 'Contact';
+    contactButton.addEventListener('click', () => {
+      // Pass user ID in query params
+      let url = `chat.html?user=${req.user_id}`;
+      window.location.href = url;
+    });
+
+    div.innerHTML = `
+      <h3>${req.title}</h3>
+      <p>${req.description}</p>
+      <p><strong>Max Fund:</strong> ₹${req.max_fund}</p>
+      <p><strong>Place:</strong> ${req.place}</p>
+      <p class="user-info">Posted by: ${userInfo}</p>
+    `;
+    div.appendChild(contactButton);
+    list.appendChild(div);
+  });
+}
+
+document.getElementById('requestForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const title = document.getElementById('title').value.trim();
+  const description = document.getElementById('description').value.trim();
+  const maxFund = parseFloat(document.getElementById('maxFund').value);
+  const place = document.getElementById('place').value.trim();
+  const user = await getCurrentUser();
+
+  if (!user) {
+    alert("You must be logged in to post a request.");
+    return;
+  }
+
+  if (!title || !description || isNaN(maxFund) || !place) {
+    alert("Please fill all fields correctly.");
+    return;
+  }
+
+  const { error } = await supabase.from('requests').insert([{
+    title,
+    description,
+    max_fund: maxFund,
+    place,
+    user_id: user.id
+  }]);
+
+  if (error) {
+    alert("Failed to post request: " + error.message);
+  } else {
+    alert("Request posted successfully!");
+    document.getElementById('requestForm').reset();
+    loadRequests();
+  }
+});
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const user = await getCurrentUser();
+  if (!user) {
+    alert("You must be logged in to view this page.");
+    window.location.href = "login.html";
+    return;
+  }
+  loadRequests();
+});
+</script>
+
+  <script src="js/script.js"></script>
+</body>
+</html>

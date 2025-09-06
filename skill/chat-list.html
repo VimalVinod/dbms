@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Chat List - SkillShareboard</title>
+<style>
+  body, html { margin:0; padding:0; height:100%; font-family: 'Poppins', sans-serif; background: linear-gradient(120deg,#e0f7fa 0%,#f5f7fa 100%);}
+  .main-container { max-width: 480px; margin: 0 auto; min-height: 100vh; display:flex; flex-direction:column; }
+  header { background: linear-gradient(90deg,#2575fc 60%,#4CAF50 100%); color:#fff; padding:16px 20px; text-align:center; font-size:1.3rem; font-weight:600; }
+  h1 { margin:0; font-size:1.3rem; }
+  #chat-list { flex:1; overflow-y:auto; background:#f7fafc; padding:12px; }
+  .user-row { display:flex; align-items:center; background:#fff; margin-bottom:10px; padding:10px 12px; border-radius:12px; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.05); transition:background 0.2s; }
+  .user-row:hover { background:#e5f1ff; }
+  .user-avatar { width:50px; height:50px; border-radius:50%; object-fit:cover; margin-right:12px; }
+  .user-info { flex:1; display:flex; flex-direction:column; }
+  .user-name { font-weight:600; color:#2575fc; font-size:1rem; }
+  .last-message { font-size:0.9rem; color:#555; margin-top:2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .timestamp { font-size:0.75rem; color:#888; margin-left:8px; }
+  /* Toast */
+  #toast-container { position: fixed; top:20px; right:20px; z-index:9999; }
+  .toast { background: rgba(37,117,252,0.95); color: #fff; padding: 10px 16px; margin-top:10px; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.2); animation: slide-in 0.4s, fade-out 0.4s 2.5s forwards;}
+  @keyframes slide-in { from { opacity:0; transform: translateX(50px);} to { opacity:1; transform: translateX(0);} }
+  @keyframes fade-out { to { opacity:0; transform: translateX(50px);} }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Chat List</h1>
+</header>
+
+<div class="main-container">
+  <div id="chat-list">
+    <!-- User rows will be inserted here -->
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+import { supabase } from './js/supabase.js';
+import { getCurrentUser } from './js/auth.js';
+
+const chatList = document.getElementById('chat-list');
+
+function showToast(msg) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+async function loadCurrentUser() {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    showToast("Login required.");
+    setTimeout(()=>window.location.href="login.html", 1500);
+    return null;
+  }
+  return currentUser;
+}
+
+async function getChatUsers(currentUser) {
+  // Get all users who have exchanged messages with the current user
+  const { data, error } = await supabase
+    .from('messages')
+    .select('sender_id, recipient_id, content, created_at')
+    .or(`sender_id.eq.${currentUser.id},recipient_id.eq.${currentUser.id}`)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    showToast("Failed to fetch messages: " + error.message);
+    return [];
+  }
+
+  // Create a map of userId => last message
+  const userMap = {};
+  data.forEach(msg => {
+    const otherId = msg.sender_id === currentUser.id ? msg.recipient_id : msg.sender_id;
+    if (!userMap[otherId]) {
+      userMap[otherId] = msg;
+    }
+  });
+
+  const userIds = Object.keys(userMap);
+  if (!userIds.length) return [];
+
+  const { data: users, error: userError } = await supabase
+    .from('users')
+    .select('id, name, profile_pic')
+    .in('id', userIds);
+
+  if (userError) {
+    showToast("Failed to fetch users: " + userError.message);
+    return [];
+  }
+
+  // Combine user info and last message
+  return users.map(u => ({
+    ...u,
+    lastMessage: userMap[u.id].content,
+    lastTime: userMap[u.id].created_at
+  }));
+}
+
+function renderUserRow(user) {
+  const row = document.createElement('div');
+  row.className = 'user-row';
+  row.innerHTML = `
+    <img class="user-avatar" src="${user.profile_pic || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=2575fc&color=fff&size=64`}" alt="${user.name}">
+    <div class="user-info">
+      <div class="user-name">${user.name}</div>
+      <div class="last-message">${user.lastMessage}</div>
+    </div>
+    <div class="timestamp">${new Date(user.lastTime).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
+  `;
+
+  row.addEventListener('click', () => {
+    window.location.href = `chat.html?user_id=${user.id}`;
+  });
+
+  chatList.appendChild(row);
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const currentUser = await loadCurrentUser();
+  if (!currentUser) return;
+
+  const users = await getChatUsers(currentUser);
+  if (!users.length) chatList.textContent = "No chats yet.";
+
+  users.forEach(u => renderUserRow(u));
+});
+</script>
+
+</body>
+</html>
